@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
+    <style>
+        .status {
+            display: inline-block;
+            width: 100px;
+            text-align: center;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .default {
+            background-color: #ccc;
+        }
+
+        .blue {
+            background-color: #09c;
+            color: white;
+        }
+
+        .green {
+            background-color: green;
+            color: white;
+        }
+
+
+    </style>
+</head>
+<body>
+    <input type="text" id="message">
+    <button id="btnAddTask">Add Request</button>
+    <div id="screen">
+
+    </div>
+    <script>
+        function addTask(msg) {
+            let payload = {
+                message : msg
+            }
+            console.log(payload);
+            $.post("/tasks", payload, function(res) {
+                console.log(res);
+            })
+        }
+
+        function getTasks() {
+            $.get("/tasks", function(res) {
+                res = JSON.parse(res)
+                if (res.status === 200) {
+                    let tasks = res.data
+                    renderTasks(tasks)
+                }
+            })
+        }
+
+        function renderTasks(tasks) {
+            let list = $('<ol id="screen"></ol>')
+            for(let task of tasks) {
+                let statusText = "Waiting"
+                let style = "default"
+                if (task.status === 2) {
+                    statusText = "Processing"
+                    style = "blue"
+                }
+
+                if (task.status === 3) {
+                    statusText = "Done"
+                    style = "green"
+                }
+
+                let child = $('<li><span class="status ' + style + '">' + statusText + '</span>' + task.message + '</li>')
+                list.append(child)
+            }
+            $("#screen").replaceWith(list)
+        }
+
+
+        $(document).ready(function() {
+            $("#btnAddTask").click(function() {
+                let val = $("#message").val()
+                console.log(val);
+                addTask(val)
+            })
+
+            setInterval(function () {
+                getTasks()
+            }, 2000)
+        })
+    </script>
+</body>
+</html>
